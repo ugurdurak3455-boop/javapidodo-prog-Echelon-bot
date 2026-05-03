@@ -1,0 +1,42 @@
+# Environment
+.env
+.env.local
+.env.*
+!.env.example
+
+# Storage & Database
+storage/
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.pytest_cache/
+*.log
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+.ai/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc (Scraper results, images, etc.)
+*.png
+*.csv
+avito_data.csv
+avito_check.png
