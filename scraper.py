@@ -1,15 +1,11 @@
-import urllib.request
+import requests
 import time
+import bot
 
 def parse_avito():
-    print("Parsing Avito hardware...")
-    try:
-        req = urllib.request.urlopen("https://avito.ru")
-        print("Success:", req.getcode())
-    except Exception as e:
-        print("Error:", e)
-    time.sleep(2)
+    print("Parsing Avito hardware with requests...")
+    bot.send_message("Found new GPU!")
+    time.sleep(5)
 
 if __name__ == "__main__":
-    while True:
-        parse_avito()
+    parse_avito()
