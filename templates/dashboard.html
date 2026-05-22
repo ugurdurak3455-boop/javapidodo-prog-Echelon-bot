@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Echelon Admin Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      min-height: 100vh;
+      padding: 30px;
+      background: #090a0f;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
+      color: #f1f5f9;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    
+    .dashboard {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 30px;
+      background: rgba(30, 41, 59, 0.3);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+    }
+    
+    h1 {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    
+    .subtitle {
+      margin-top: 4px;
+      color: #94a3b8;
+      font-size: 13px;
+      font-family: 'Consolas', monospace;
+    }
+    
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    
+    .status::before {
+      content: "●";
+      font-size: 10px;
+    }
+    
+    .status.ok {
+      color: #10b981;
+    }
+    
+    .status.error {
+      color: #f43f5e;
+    }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+    }
+    
+    .metric {
+      padding: 20px 24px;
+      background: rgba(30, 41, 59, 0.25);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    
+    .metric:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+      transform: translateY(-2px);
+    }
+    
+    .label {
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    .value {
+      color: #ffffff;
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    
+    .value.green {
+      color: #10b981;
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+    
+    .value.amber {
+      color: #f59e0b;
+      text-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+    }
+    
+    .meta {
+      margin-top: 10px;
+      color: #64748b;
+      font-size: 12px;
+    }
+    
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 45% 55%;
+      gap: 20px;
+    }
+    
+    .panel {
+      background: rgba(30, 41, 59, 0.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .panel-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .panel-header h2 {
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .panel-header p {
+      color: #64748b;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .search-input {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 500;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+    }
+    
+    select.search-input {
+      cursor: pointer;
+      appearance: none;
+      padding-right: 30px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px;
+    }
+    
+    .action-btn {
+      background: #10b981;
+      border: none;
+      color: #090a0f;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      background: #34d399;
+      transform: translateY(-1px);
+    }
+    
+    .sort-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #f1f5f9;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .sort-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .scroll {
+      overflow-x: auto;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    th {
+      padding: 14px 20px;
+      text-align: left;
+      color: #64748b;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      position: sticky;
+      top: 0;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+    
+    td {
+      padding: 14px 20px;
+      color: #cbd5e1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+    }
+    
+    td.empty-cell {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+      font-style: italic;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
+    /* Rows highlight for discount >= 15% */
+    tr.good-deal td {
+      background: rgba(16, 185, 129, 0.02);
+    }
+    tr.good-deal:hover td {
+      background: rgba(16, 185, 129, 0.04);
+    }
+    
+    .price {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    
+    .badge.green {
+      color: #10b981;
+    }
+    
+    .badge.red {
+      color: #f43f5e;
+    }
+    
+    .badge.neutral {
+      color: #94a3b8;
+    }
+    
+    .discount-label {
+      font-weight: 700;
+      font-size: 13px;
+    }
+    
+    .discount-label.green {
+      color: #10b981;
+    }
+    
+    .discount-label.red {
+      color: #f43f5e;
+    }
+    
+    .discount-label.neutral {
+      color: #94a3b8;
+    }
+    
+    .muted {
+      color: #64748b;
+    }
+    
+    .empty-cell {
+      padding: 40px;
+      color: #64748b;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    .link-icon {
+      color: #64748b;
+      transition: color 0.2s, transform 0.2s;
+      display: inline-flex;
+    }
+    
+    .link-icon:hover {
+      color: #10b981;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <main class="dashboard">
+    <header>
+      <div>
+        <h1>Echelon Admin Dashboard</h1>
+        <div class="subtitle">База данных: {{DB_PATH}}</div>
+      </div>
+      <div class="status {{DB_STATUS_CLASS}}">{{DB_STATUS}}</div>
+    </header>
+
+    {{DB_ERROR_BLOCK}}
+
+    <section class="metrics-grid">
+      <div class="metric">
+        <div class="label">Объявления</div>
+        <div class="value">{{TOTAL_LISTINGS}}</div>
+        <div class="meta">Спарсено: {{LAST_PARSED_AT}}</div>
+      </div>
+      <div class="metric">
+        <div class="label">Уведомления</div>
+        <div class="value green">{{TOTAL_NOTIFICATIONS}}</div>
+        <div class="meta">Средняя выгода: {{AVG_DISCOUNT}}%</div>
+      </div>
+      <div class="metric">
+        <div class="label">Экономия</div>
+        <div class="value green">{{TOTAL_SAVINGS}}</div>
+        <div class="meta">RUB (по медиане)</div>
+      </div>
+      <div class="metric">
+        <div class="label">Точность</div>
+        <div class="value amber">{{ACCURACY_PERCENT}}%</div>
+        <div style="margin-top: 10px; width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+          <div style="width: {{ACCURACY_PERCENT}}%; height: 100%; background: #f59e0b; border-radius: 3px; transition: width 1s ease-in-out;"></div>
+        </div>
+        <div class="meta" style="margin-top: 8px;">По validation_log</div>
+      </div>
+      <div class="metric">
+        <div class="label">Пользователи</div>
+        <div class="value">{{TOTAL_USERS}}</div>
+        <div class="meta">Моделей в базе: {{MODELS_COUNT}}</div>
+      </div>
+    </section>
+
+    <div class="bento-grid">
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Лог валидации (Бот)</h2>
+        </div>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 15%">Время</th>
+                <th style="width: 25%">Модель / ID</th>
+                <th style="width: 20%">Цена</th>
+                <th style="width: 20%">Медиана</th>
+                <th style="width: 10%">Выгода</th>
+                <th style="width: 10%">Статус</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{VALIDATION_ROWS}}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Все объявления</h2>
+            <p>Панель поиска и фильтрации</p>
+          </div>
+          <div class="controls">
+            <input type="text" id="search-title" class="search-input" placeholder="Поиск по названию..." style="width: 160px;" oninput="applyFilters()">
+            
+            <select id="filter-model" class="search-input" style="width: 130px;" onchange="applyFilters()">
+              <option value="">Все модели</option>
+              {{MODEL_OPTIONS}}
+            </select>
+
+            <select id="filter-city" class="search-input" style="width: 120px;" onchange="applyFilters()">
+              <option value="">Все города</option>
+              {{CITY_OPTIONS}}
+            </select>
+
+            <input type="number" id="discount-input" class="search-input" placeholder="Выгода %" style="width: 85px;" oninput="applyFilters()">
+            
+            <button id="price-sort-btn" class="sort-btn" onclick="toggleSort()">Цена ↕</button>
+            <button class="sort-btn" onclick="resetFilters()" style="color: #f43f5e; border-color: rgba(244, 63, 94, 0.3);">Сброс ✖</button>
+          </div>
+        </div>
+        <div class="scroll">
+          <table id="main-table">
+            <thead>
+              <tr>
+                <th style="width: 15%">Время</th>
+                <th style="width: 20%">Модель / Город</th>
+                <th style="width: 40%">Название</th>
+                <th style="width: 15%">Цена</th>
+                <th style="width: 10%">Выгода</th>
+              </tr>
+            </thead>
+            <tbody id="listings-body">
+              {{LISTING_ROWS}}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Жалобы пользователей</h2>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 15%">Время</th>
+              <th style="width: 15%">User ID</th>
+              <th style="width: 40%">Товар</th>
+              <th style="width: 30%">Причина</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{REPORT_ROWS}}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentSort = 'none';
+
+    function applyFilters() {
+      const minDiscount = parseFloat(document.getElementById('discount-input').value) || -999;
+      const modelFilter = document.getElementById('filter-model').value.toLowerCase();
+      const cityFilter = document.getElementById('filter-city').value.toLowerCase();
+      const searchTitle = document.getElementById('search-title').value.toLowerCase();
+
+      const rows = document.querySelectorAll('#listings-body tr:not(#empty-state-row)');
+      let visibleCount = 0;
+      rows.forEach(row => {
+        // Пропускаем строку пустого состояния, если она есть
+        if (row.id === 'empty-state-row') return;
+        
+        const rowModelCity = row.cells[1] ? row.cells[1].innerText.toLowerCase() : ''; 
+        const rowTitle = row.cells[2] ? row.cells[2].innerText.toLowerCase() : '';
+        const rowDiscount = row.cells[4] ? (parseFloat(row.cells[4].getAttribute('data-value')) || 0) : 0;
+
+        const matchesModel = !modelFilter || rowModelCity.includes(modelFilter);
+        const matchesCity = !cityFilter || rowModelCity.includes(cityFilter);
+        const matchesDiscount = rowDiscount >= minDiscount;
+        const matchesSearch = !searchTitle || rowTitle.includes(searchTitle);
+
+        if (matchesModel && matchesCity && matchesDiscount && matchesSearch) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      
+      let emptyStateRow = document.getElementById('empty-state-row');
+      if (visibleCount === 0) {
+        if (!emptyStateRow) {
+          emptyStateRow = document.createElement('tr');
+          emptyStateRow.id = 'empty-state-row';
+          emptyStateRow.innerHTML = '<td colspan="5" class="empty-cell">По вашему запросу ничего не найдено</td>';
+          document.getElementById('listings-body').appendChild(emptyStateRow);
+        }
+        emptyStateRow.style.display = '';
+      } else if (emptyStateRow) {
+        emptyStateRow.style.display = 'none';
+      }
+    }
+
+    function resetFilters() {
+      document.getElementById('discount-input').value = '';
+      document.getElementById('filter-model').value = '';
+      document.getElementById('filter-city').value = '';
+      document.getElementById('search-title').value = '';
+      applyFilters();
+    }
+
+    function toggleSort() {
+      const btn = document.getElementById('price-sort-btn');
+      if (currentSort === 'none' || currentSort === 'desc') {
+        currentSort = 'asc';
+        btn.innerText = 'Цена ↑';
+      } else {
+        currentSort = 'desc';
+        btn.innerText = 'Цена ↓';
+      }
+      
+      const tbody = document.getElementById('listings-body');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const sorted = rows.sort((a, b) => {
+        const aVal = parseFloat(a.cells[3].getAttribute('data-value')) || 0;
+        const bVal = parseFloat(b.cells[3].getAttribute('data-value')) || 0;
+        return currentSort === 'asc' ? aVal - bVal : bVal - aVal;
+      });
+      
+      tbody.innerHTML = '';
+      sorted.forEach(row => tbody.appendChild(row));
+    }
+  </script>
+</body>
+</html>
