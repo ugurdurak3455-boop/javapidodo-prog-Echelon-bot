@@ -778,5 +778,3 @@ async def update_user_setting(user_id: int, setting: str, value: Any) -> None:
     async with db_session() as db:
         await db.execute(f"UPDATE users SET {setting} = ? WHERE user_id = ?", (value, user_id))
         await db.commit()
-
-# optimized median calc

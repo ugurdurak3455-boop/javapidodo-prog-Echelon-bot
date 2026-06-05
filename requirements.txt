@@ -1,1 +1,11 @@
-requests
+aiogram==3.15.0
+aiosqlite==0.20.0
+playwright==1.49.1
+pydantic==2.9.2
+pydantic-settings==2.7.0
+playwright-stealth==1.0.6
+loguru==0.7.3
+tenacity==9.1.4
+CustomTkinter==5.2.2
+python-dotenv==1.0.1
+fake-useragent
