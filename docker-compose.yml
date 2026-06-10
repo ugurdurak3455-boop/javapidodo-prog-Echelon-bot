@@ -1,0 +1,20 @@
+services:
+  echelon:
+    build: .
+    image: echelon_bot:latest
+    container_name: echelon_bot
+    restart: unless-stopped
+    volumes:
+      - ./storage:/app/storage
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ADMIN_DASHBOARD_HOST=0.0.0.0
+    ports:
+      - "${ADMIN_DASHBOARD_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
